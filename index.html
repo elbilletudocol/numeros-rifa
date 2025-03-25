@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Rifa en Tiempo Real</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 20px;
+      background-color: white;
+    }
+    .header-img {
+      width: 100%;
+      max-width: 600px;
+      height: auto;
+      margin: 0 auto 15px;
+      display: block;
+    }
+    .grid { 
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      gap: 8px;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 10px;
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .numero {
+      padding: 12px 5px;
+      border-radius: 5px;
+      font-weight: bold;
+      text-align: center;
+      font-size: 14px;
+      transition: all 0.3s ease;
+    }
+    /* Tus colores */
+    .libre { background: white; border: 1px solid #ddd; }
+    .vendido { background: #11734b; color: white; }
+    .separado { background: #d4edbc; }
+    .pago-pendiente { background: #b4a7d6; color: white; } /* Clase modificada */
+    
+    /* Responsive para móviles */
+    @media (max-width: 600px) {
+      .numero { padding: 8px 2px; font-size: 12px; }
+    }
+  </style>
+</head>
+<body>
+  <img src="header-rifa.png" alt="Rifa" class="header-img">
+
+  <div class="grid" id="numerosGrid"></div>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbyMWPIg1IQeU2pZnkb0o1vx2e-KJvmzCB8CImUsn3AC1vJ2c1B9IvQWB0cInPOnyYnEug/exec";
+
+    async function cargarDatos() {
+      try {
+        const response = await fetch(API_URL);
+        const data = await response.json();
+        actualizarCuadricula(data);
+      } catch (error) {
+        console.error("Error cargando datos:", error);
+      }
+    }
+
+    function actualizarCuadricula(datos) {
+      const grid = document.getElementById('numerosGrid');
+      if (!grid) return;
+      
+      grid.innerHTML = '';
+      
+      for (let i = 0; i < 100; i++) {
+        const num = i.toString().padStart(2, '0');
+        const celda = document.createElement('div');
+        celda.className = 'numero libre';
+        celda.textContent = num;
+
+        const registro = datos.find(item => item[0] === num);
+        if (registro) {
+          const estado = registro[4].toLowerCase().replace(' ', '-'); // "pago-pendiente"
+          celda.className = `numero ${estado}`; // Ahora coincide con .pago-pendiente
+        }
+
+        grid.appendChild(celda);
+      }
+    }
+
+    // Cargar datos al inicio y cada 30 segundos
+    document.addEventListener('DOMContentLoaded', cargarDatos);
+    setInterval(cargarDatos, 30000);
+  </script>
+</body>
+</html>
